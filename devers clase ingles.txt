@@ -1,0 +1,217 @@
+import { useState } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+
+const levels = ['A1', 'A2', 'B1', 'B2'];
+
+const content = {
+  A1: {
+    topics: [
+      'Greetings and introductions',
+      'Numbers and the alphabet',
+      'Basic verbs (to be, have, do)',
+      'Everyday objects and places'
+    ],
+    audio: [
+      'audio/greetings.mp3',
+      'audio/numbers.mp3',
+      'audio/basic_verbs.mp3',
+      'audio/objects.mp3'
+    ],
+    exam: [
+      { question: 'How do you say "hola" in English?', answer: 'hello' },
+      { question: 'What is the verb "ser" in English?', answer: 'to be' }
+    ]
+  },
+  A2: {
+    topics: [
+      'Describing people and places',
+      'Daily routines',
+      'Simple past and future',
+      'Shopping and prices'
+    ],
+    audio: [
+      'audio/describing.mp3',
+      'audio/routines.mp3',
+      'audio/past_future.mp3',
+      'audio/shopping.mp3'
+    ],
+    exam: [
+      { question: 'What is the past tense of "go"?', answer: 'went' },
+      { question: 'How do you say "comprar" in English?', answer: 'buy' }
+    ]
+  },
+  B1: {
+    topics: [
+      'Work and education',
+      'Making comparisons',
+      'Giving opinions',
+      'Describing experiences'
+    ],
+    audio: [
+      'audio/work.mp3',
+      'audio/comparisons.mp3',
+      'audio/opinions.mp3',
+      'audio/experiences.mp3'
+    ],
+    exam: [
+      { question: 'What is the comparative form of "good"?', answer: 'better' },
+      { question: 'How do you say "experiencia" in English?', answer: 'experience' }
+    ]
+  },
+  B2: {
+    topics: [
+      'Debating and expressing complex ideas',
+      'Understanding news articles',
+      'Advanced verb tenses',
+      'Formal writing'
+    ],
+    audio: [
+      'audio/debating.mp3',
+      'audio/news.mp3',
+      'audio/verb_tenses.mp3',
+      'audio/writing.mp3'
+    ],
+    exam: [
+      { question: 'How do you say "aunque" in English?', answer: 'although' },
+      { question: 'What tense is "had been working"?', answer: 'past perfect continuous' }
+    ]
+  }
+};
+
+export default function DeversEnglishClasses() {
+  const [answers, setAnswers] = useState({});
+  const [feedback, setFeedback] = useState('');
+  const [progress, setProgress] = useState(0);
+  const [contactMessage, setContactMessage] = useState('');
+  const [user, setUser] = useState({ name: '', email: '', loggedIn: false });
+
+  const handleChange = (e, question) => {
+    setAnswers({ ...answers, [question]: e.target.value });
+  };
+
+  const checkAnswers = (exam) => {
+    let correct = 0;
+    exam.forEach((q) => {
+      if (answers[q.question]?.trim().toLowerCase() === q.answer) correct++;
+    });
+    const percent = Math.round((correct / exam.length) * 100);
+    setProgress(percent);
+    setFeedback(`You got ${correct} out of ${exam.length} correct.`);
+  };
+
+  const handleLogin = () => {
+    if (user.name && user.email) {
+      setUser({ ...user, loggedIn: true });
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto bg-white rounded-2xl shadow-xl">
+      <div className="mb-8 text-center">
+        <img src="/images/devers-logo.png" alt="Devers Logo" className="mx-auto w-28 mb-4" />
+        <h1 className="text-4xl font-bold text-gray-800">Devers Clases de Inglés</h1>
+        <p className="text-gray-600">Aprende desde lo básico hasta intermedio-alto con recursos prácticos.</p>
+      </div>
+
+      {!user.loggedIn ? (
+        <Card className="mb-6">
+          <CardContent className="space-y-4 pt-4">
+            <h2 className="text-2xl font-bold">Zona Estudiante</h2>
+            <Input
+              placeholder="Nombre completo"
+              value={user.name}
+              onChange={(e) => setUser({ ...user, name: e.target.value })}
+            />
+            <Input
+              placeholder="Correo electrónico"
+              value={user.email}
+              onChange={(e) => setUser({ ...user, email: e.target.value })}
+            />
+            <Button onClick={handleLogin}>Acceder</Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="text-green-600 font-semibold mb-4">
+          Bienvenido/a {user.name} ({user.email})
+        </p>
+      )}
+
+      <Tabs defaultValue="A1">
+        <TabsList className="grid grid-cols-4 gap-2">
+          {levels.map((level) => (
+            <TabsTrigger key={level} value={level}>{level}</TabsTrigger>
+          ))}
+        </TabsList>
+        {levels.map((level, idx) => (
+          <TabsContent key={level} value={level} className="mt-6">
+            <div>
+              <h2 className="text-2xl font-semibold mb-2 text-gray-800">Temas del Nivel {level}</h2>
+              <ul className="list-disc pl-5 mb-4 text-gray-700">
+                {content[level].topics.map((topic, i) => (
+                  <li key={i} className="mb-2">
+                    {topic}
+                    <audio controls src={content[level].audio[i]} className="mt-2" />
+                  </li>
+                ))}
+              </ul>
+              <Card className="mb-4">
+                <CardContent className="space-y-4 pt-4">
+                  <h3 className="text-xl font-bold text-gray-800">Examen</h3>
+                  {content[level].exam.map((q, i) => (
+                    <div key={i}>
+                      <p>{q.question}</p>
+                      <Input
+                        placeholder="Tu respuesta"
+                        value={answers[q.question] || ''}
+                        onChange={(e) => handleChange(e, q.question)}
+                      />
+                    </div>
+                  ))}
+                  <Button onClick={() => checkAnswers(content[level].exam)}>
+                    Verificar respuestas
+                  </Button>
+                  {feedback && (
+                    <div>
+                      <p className="text-green-600 font-semibold">{feedback}</p>
+                      <Progress value={progress} className="mt-2" />
+                      {progress >= 80 && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="mt-4">Descargar certificado</Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <p>¡Felicidades {user.name}! Has aprobado el nivel {level}.</p>
+                            <p>Tu certificado será enviado a: {user.email}</p>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Contáctanos</h2>
+        <Textarea
+          placeholder="Escribe tu mensaje o consulta aquí..."
+          value={contactMessage}
+          onChange={(e) => setContactMessage(e.target.value)}
+          className="mb-2"
+        />
+        <Button onClick={() => alert('Mensaje enviado: ' + contactMessage)}>
+          Enviar mensaje
+        </Button>
+      </div>
+    </div>
+  );
+}
